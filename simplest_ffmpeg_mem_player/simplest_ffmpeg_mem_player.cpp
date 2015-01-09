@@ -53,11 +53,11 @@ int main(int argc, char* argv[])
 	AVCodecContext	*pCodecCtx;
 	AVCodec			*pCodec;
 	char filepath[]="cuc60anniversary_start.mkv";
-	
+
 	av_register_all();
 	avformat_network_init();
 	pFormatCtx = avformat_alloc_context();
-	
+
 	fp_open=fopen(filepath,"rb+");
 	//AVIOContextÖÐµÄ»º´æ
 	unsigned char *aviobuffer=(unsigned char *)av_malloc(32768);

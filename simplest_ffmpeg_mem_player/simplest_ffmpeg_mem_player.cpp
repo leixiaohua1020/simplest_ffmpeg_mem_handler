@@ -19,15 +19,31 @@
 
 #include <stdio.h>
 
+#define __STDC_CONSTANT_MACROS
+
+#ifdef _WIN32
+//Windows
 extern "C"
 {
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"
-	//SDL
 #include "sdl/SDL.h"
-#include "sdl/SDL_thread.h"
 };
+#else
+//Linux...
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <sdl/SDL.h>
+#ifdef __cplusplus
+};
+#endif
+#endif
 
 //Output YUV420P 
 #define OUTPUT_YUV420P 0
@@ -59,17 +75,17 @@ int main(int argc, char* argv[])
 	pFormatCtx = avformat_alloc_context();
 
 	fp_open=fopen(filepath,"rb+");
-	//AVIOContext中的缓存
+	//Init AVIOContext
 	unsigned char *aviobuffer=(unsigned char *)av_malloc(32768);
 	AVIOContext *avio =avio_alloc_context(aviobuffer, 32768,0,NULL,read_buffer,NULL,NULL);
 	pFormatCtx->pb=avio;
 
 	if(avformat_open_input(&pFormatCtx,NULL,NULL,NULL)!=0){
-		printf("Couldn't open input stream.（无法打开输入流）\n");
+		printf("Couldn't open input stream.\n");
 		return -1;
 	}
-	if(av_find_stream_info(pFormatCtx)<0){
-		printf("Couldn't find stream information.（无法获取流信息）\n");
+	if(avformat_find_stream_info(pFormatCtx,NULL)<0){
+		printf("Couldn't find stream information.\n");
 		return -1;
 	}
 	videoindex=-1;
@@ -79,17 +95,17 @@ int main(int argc, char* argv[])
 			break;
 		}
 	if(videoindex==-1){
-		printf("Didn't find a video stream.（没有找到视频流）\n");
+		printf("Didn't find a video stream.\n");
 		return -1;
 	}
 	pCodecCtx=pFormatCtx->streams[videoindex]->codec;
 	pCodec=avcodec_find_decoder(pCodecCtx->codec_id);
 	if(pCodec==NULL){
-		printf("Codec not found.（没有找到解码器）\n");
+		printf("Codec not found.\n");
 		return -1;
 	}
 	if(avcodec_open2(pCodecCtx, pCodec,NULL)<0){
-		printf("Could not open codec.（无法打开解码器）\n");
+		printf("Could not open codec.\n");
 		return -1;
 	}
 	AVFrame	*pFrame,*pFrameYUV;
@@ -120,14 +136,11 @@ int main(int argc, char* argv[])
 	int ret, got_picture;
 
 	AVPacket *packet=(AVPacket *)av_malloc(sizeof(AVPacket));
-	//Output Information-----------------------------
-	printf("File Information---------------------------------\n");
-	av_dump_format(pFormatCtx,0,filepath,0);
-	printf("-------------------------------------------------\n");
 
 #if OUTPUT_YUV420P 
     FILE *fp_yuv=fopen("output.yuv","wb+");  
 #endif  
+	SDL_WM_SetCaption("Simplest FFmpeg Mem Player",NULL);
 
 	struct SwsContext *img_convert_ctx;
 	img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL); 
@@ -136,7 +149,7 @@ int main(int argc, char* argv[])
 		if(packet->stream_index==videoindex){
 			ret = avcodec_decode_video2(pCodecCtx, pFrame, &got_picture, packet);
 			if(ret < 0){
-				printf("Decode Error.（解码错误）\n");
+				printf("Decode Error.\n");
 				return -1;
 			}
 			if(got_picture){

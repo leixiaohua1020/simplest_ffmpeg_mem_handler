@@ -22,6 +22,10 @@
  */
 #include <stdio.h>
 
+#define __STDC_CONSTANT_MACROS
+
+#ifdef _WIN32
+//Windows
 extern "C"
 {
 #include "libavcodec/avcodec.h"
@@ -30,6 +34,22 @@ extern "C"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 };
+#else
+//Linux...
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
+#include <libavutil/opt.h>
+#include <libavutil/pixdesc.h>
+#ifdef __cplusplus
+};
+#endif
+#endif
+
 
 FILE *fp_open;
 FILE *fp_write;
@@ -128,11 +148,17 @@ int main(int argc, char* argv[])
 	unsigned char* outbuffer=NULL;
 	inbuffer=(unsigned char*)av_malloc(32768);
 	outbuffer=(unsigned char*)av_malloc(32768);
-
+	AVIOContext *avio_in=NULL;
+	AVIOContext *avio_out=NULL;
 	/*open input file*/
-	AVIOContext *avio_in =avio_alloc_context(inbuffer, 32768,0,NULL,read_buffer,NULL,NULL);  
+	avio_in =avio_alloc_context(inbuffer, 32768,0,NULL,read_buffer,NULL,NULL);  
 	if(avio_in==NULL)
 		goto end;
+	/*open output file*/
+	avio_out =avio_alloc_context(outbuffer, 32768,0,NULL,NULL,write_buffer,NULL);  
+	if(avio_out==NULL)
+		goto end;
+	
 	ifmt_ctx->pb=avio_in; 
 	ifmt_ctx->flags=AVFMT_FLAG_CUSTOM_IO;
 	if ((ret = avformat_open_input(&ifmt_ctx, "whatever", NULL, NULL)) < 0) {
@@ -161,10 +187,7 @@ int main(int argc, char* argv[])
 	}
 	//av_dump_format(ifmt_ctx, 0, "whatever", 0);
 
-	/*open output file*/
-	AVIOContext *avio_out =avio_alloc_context(outbuffer, 32768,0,NULL,NULL,write_buffer,NULL);  
-	if(avio_out==NULL)
-		goto end;
+
 	//avio_out->write_packet=write_packet;
 	ofmt_ctx->pb=avio_out; 
 	ofmt_ctx->flags=AVFMT_FLAG_CUSTOM_IO;
@@ -323,8 +346,9 @@ end:
 	avformat_close_input(&ifmt_ctx);
 	avformat_free_context(ofmt_ctx);
 
-	fcloseall();
-
+	fclose(fp_open);
+	fclose(fp_write);
+	
 	if (ret < 0)
 		av_log(NULL, AV_LOG_ERROR, "Error occurred\n");
 	return (ret? 1:0);

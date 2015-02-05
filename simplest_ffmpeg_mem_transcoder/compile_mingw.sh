@@ -1,6 +1,6 @@
 #! /bin/sh
-#最简单的基于FFmpeg的内存读写例子（内存转码器）----命令行编译
-#Simplest FFmpeg mem Transcoder----Compile in Shell 
+#最简单的基于FFmpeg的内存读写例子（内存转码器） ----MinGW命令行编译
+#Simplest FFmpeg mem Transcoder ----Compile in MinGW 
 #
 #雷霄骅 Lei Xiaohua
 #leixiaohua1020@126.com
@@ -9,6 +9,6 @@
 #http://blog.csdn.net/leixiaohua1020
 #
 #compile
-gcc simplest_ffmpeg_mem_transcoder.cpp -g -o simplest_ffmpeg_mem_transcoder.out \
+g++ simplest_ffmpeg_mem_transcoder.cpp -g -o simplest_ffmpeg_mem_transcoder.exe \
 -I /usr/local/include -L /usr/local/lib \
 -lavcodec -lavformat -lavutil -lavdevice -lavfilter -lpostproc -lswresample -lswscale

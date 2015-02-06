@@ -277,7 +277,7 @@ int main(int argc, char* argv[])
 			(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
 		ret = avcodec_decode_video2(ifmt_ctx->streams[stream_index]->codec, frame,
 			&got_frame, &packet);
-		printf("Decode 1 Packet\tsize:%d\tpts:%d\n",packet.size,packet.pts);
+		printf("Decode 1 Packet\tsize:%d\tpts:%lld\n",packet.size,packet.pts);
 
 		if (ret < 0) {
 			av_frame_free(&frame);
@@ -294,7 +294,7 @@ int main(int argc, char* argv[])
 			ret = avcodec_encode_video2 (ofmt_ctx->streams[stream_index]->codec, &enc_pkt,
 				frame, &enc_got_frame);
 
-			printf("Encode 1 Packet\tsize:%d\tpts:%d\n",enc_pkt.size,enc_pkt.pts);
+			printf("Encode 1 Packet\tsize:%d\tpts:%lld\n",enc_pkt.size,enc_pkt.pts);
 
 			av_frame_free(&frame);
 			if (ret < 0)

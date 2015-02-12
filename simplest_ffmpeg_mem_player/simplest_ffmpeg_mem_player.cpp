@@ -111,8 +111,8 @@ int main(int argc, char* argv[])
 	AVFrame	*pFrame,*pFrameYUV;
 	pFrame=av_frame_alloc();
 	pFrameYUV=av_frame_alloc();
-	uint8_t *out_buffer=(uint8_t *)av_malloc(avpicture_get_size(PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height));
-	avpicture_fill((AVPicture *)pFrameYUV, out_buffer, PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+	//uint8_t *out_buffer=(uint8_t *)av_malloc(avpicture_get_size(PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height));
+	//avpicture_fill((AVPicture *)pFrameYUV, out_buffer, PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
 	//SDL----------------------------
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) {  
 		printf( "Could not initialize SDL - %s\n", SDL_GetError()); 
@@ -132,6 +132,10 @@ int main(int argc, char* argv[])
 	SDL_Overlay *bmp; 
 	bmp = SDL_CreateYUVOverlay(pCodecCtx->width, pCodecCtx->height,SDL_YV12_OVERLAY, screen); 
 	SDL_Rect rect;
+	rect.x = 0;    
+	rect.y = 0;    
+	rect.w = screen_w;    
+	rect.h = screen_h;  
 	//SDL End------------------------
 	int ret, got_picture;
 
@@ -153,6 +157,13 @@ int main(int argc, char* argv[])
 				return -1;
 			}
 			if(got_picture){
+				SDL_LockYUVOverlay(bmp);
+				pFrameYUV->data[0]=bmp->pixels[0];
+				pFrameYUV->data[1]=bmp->pixels[2];
+				pFrameYUV->data[2]=bmp->pixels[1];     
+				pFrameYUV->linesize[0]=bmp->pitches[0];
+				pFrameYUV->linesize[1]=bmp->pitches[2];   
+				pFrameYUV->linesize[2]=bmp->pitches[1];
 				sws_scale(img_convert_ctx, (const uint8_t* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pFrameYUV->data, pFrameYUV->linesize);
 #if OUTPUT_YUV420P
 				int y_size=pCodecCtx->width*pCodecCtx->height;  
@@ -160,18 +171,8 @@ int main(int argc, char* argv[])
 				fwrite(pFrameYUV->data[1],1,y_size/4,fp_yuv);  //U
 				fwrite(pFrameYUV->data[2],1,y_size/4,fp_yuv);  //V
 #endif
-				SDL_LockYUVOverlay(bmp);
-				bmp->pixels[0]=pFrameYUV->data[0];
-				bmp->pixels[2]=pFrameYUV->data[1];
-				bmp->pixels[1]=pFrameYUV->data[2];     
-				bmp->pitches[0]=pFrameYUV->linesize[0];
-				bmp->pitches[2]=pFrameYUV->linesize[1];   
-				bmp->pitches[1]=pFrameYUV->linesize[2];
 				SDL_UnlockYUVOverlay(bmp); 
-				rect.x = 0;    
-				rect.y = 0;    
-				rect.w = screen_w;    
-				rect.h = screen_h;  
+
 				SDL_DisplayYUVOverlay(bmp, &rect); 
 				//Delay 40ms
 				SDL_Delay(40);
@@ -189,7 +190,7 @@ int main(int argc, char* argv[])
 
 	SDL_Quit();
 
-	av_free(out_buffer);
+	//av_free(out_buffer);
 	av_free(pFrameYUV);
 	avcodec_close(pCodecCtx);
 	avformat_close_input(&pFormatCtx);

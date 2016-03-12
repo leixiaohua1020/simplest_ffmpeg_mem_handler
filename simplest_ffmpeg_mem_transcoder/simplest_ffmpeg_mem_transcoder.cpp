@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 	if(avio_in==NULL)
 		goto end;
 	/*open output file*/
-	avio_out =avio_alloc_context(outbuffer, 32768,0,NULL,NULL,write_buffer,NULL);  
+	avio_out =avio_alloc_context(outbuffer, 32768,1,NULL,NULL,write_buffer,NULL);  
 	if(avio_out==NULL)
 		goto end;
 	

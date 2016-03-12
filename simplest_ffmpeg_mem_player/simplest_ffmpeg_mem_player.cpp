@@ -111,8 +111,8 @@ int main(int argc, char* argv[])
 	AVFrame	*pFrame,*pFrameYUV;
 	pFrame=av_frame_alloc();
 	pFrameYUV=av_frame_alloc();
-	//uint8_t *out_buffer=(uint8_t *)av_malloc(avpicture_get_size(PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height));
-	//avpicture_fill((AVPicture *)pFrameYUV, out_buffer, PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
+	//uint8_t *out_buffer=(uint8_t *)av_malloc(avpicture_get_size(AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height));
+	//avpicture_fill((AVPicture *)pFrameYUV, out_buffer, AV_PIX_FMT_YUV420P, pCodecCtx->width, pCodecCtx->height);
 	//SDL----------------------------
 	if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER)) {  
 		printf( "Could not initialize SDL - %s\n", SDL_GetError()); 
@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 	SDL_WM_SetCaption("Simplest FFmpeg Mem Player",NULL);
 
 	struct SwsContext *img_convert_ctx;
-	img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL); 
+	img_convert_ctx = sws_getContext(pCodecCtx->width, pCodecCtx->height, pCodecCtx->pix_fmt, pCodecCtx->width, pCodecCtx->height, AV_PIX_FMT_YUV420P, SWS_BICUBIC, NULL, NULL, NULL); 
 	//------------------------------
 	while(av_read_frame(pFormatCtx, packet)>=0){
 		if(packet->stream_index==videoindex){
